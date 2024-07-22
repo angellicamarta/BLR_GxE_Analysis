@@ -1,17 +1,17 @@
 # Load prepared data
 load("prepared_believe_data.RData")
 
-# Define interaction matrices
-X0 <- matrix(0, nrow=nrow(X), ncol=ncol(X))
-X_main <- rbind(X, X)
-X_1 <- rbind(X, X0)
-X_2 <- rbind(X0, X)
+# Define interaction matrices for Albumin
+X0_albumin <- matrix(0, nrow=nrow(X), ncol=ncol(X))
+X_main_albumin <- rbind(X, X)
+X_1_albumin <- rbind(X, X0_albumin)
+X_2_albumin <- rbind(X0_albumin, X)
 
 # Run BGLR analysis for Albumin.env
 fm_albumin <- BGLR(y = y, ETA = list(
-  main = list(X = X_main, model = 'BRR'),
-  int1 = list(X = X_1, model = 'BRR'),
-  int2 = list(X = X_2, model = 'BRR')
+  main = list(X = X_main_albumin, model = 'BRR'),
+  int1 = list(X = X_1_albumin, model = 'BRR'),
+  int2 = list(X = X_2_albumin, model = 'BRR')
 ), nIter = 6000, burnIn = 1000, saveAt = 'GxE_Albumin_', groups = rep(1:2, each = nrow(X)))
 
 # Post-processing for Albumin.env
@@ -25,11 +25,17 @@ h2_1_albumin <- varU1_albumin / (varU1_albumin + varE_albumin[, 1])
 h2_2_albumin <- varU2_albumin / (varU2_albumin + varE_albumin[, 2])
 COR_albumin <- varU_main_albumin / sqrt(varU1_albumin * varU2_albumin)
 
+# Define interaction matrices for Vigorous10MinsActivity
+X0_vigorous <- matrix(0, nrow=nrow(X), ncol=ncol(X))
+X_main_vigorous <- rbind(X, X)
+X_1_vigorous <- rbind(X, X0_vigorous)
+X_2_vigorous <- rbind(X0_vigorous, X)
+
 # Run BGLR analysis for Vigorous10MinsActivity.env
 fm_vigorous <- BGLR(y = y, ETA = list(
-  main = list(X = X_main, model = 'BRR'),
-  int1 = list(X = X_1, model = 'BRR'),
-  int2 = list(X = X_2, model = 'BRR')
+  main = list(X = X_main_vigorous, model = 'BRR'),
+  int1 = list(X = X_1_vigorous, model = 'BRR'),
+  int2 = list(X = X_2_vigorous, model = 'BRR')
 ), nIter = 6000, burnIn = 1000, saveAt = 'GxE_Vigorous_', groups = rep(1:2, each = nrow(X)))
 
 # Post-processing for Vigorous10MinsActivity.env
@@ -43,11 +49,17 @@ h2_1_vigorous <- varU1_vigorous / (varU1_vigorous + varE_vigorous[, 1])
 h2_2_vigorous <- varU2_vigorous / (varU2_vigorous + varE_vigorous[, 2])
 COR_vigorous <- varU_main_vigorous / sqrt(varU1_vigorous * varU2_vigorous)
 
+# Define interaction matrices for Study environment
+X0_study <- matrix(0, nrow=nrow(X), ncol=ncol(X))
+X_main_study <- rbind(X, X)
+X_1_study <- rbind(X, X0_study)
+X_2_study <- rbind(X0_study, X)
+
 # Run BGLR analysis for study.env
 fm_study <- BGLR(y = y, ETA = list(
-  main = list(X = X_main, model = 'BRR'),
-  int1 = list(X = X_1, model = 'BRR'),
-  int2 = list(X = X_2, model = 'BRR')
+  main = list(X = X_main_study, model = 'BRR'),
+  int1 = list(X = X_1_study, model = 'BRR'),
+  int2 = list(X = X_2_study, model = 'BRR')
 ), nIter = 6000, burnIn = 1000, saveAt = 'GxE_Study_', groups = rep(1:2, each = nrow(X)))
 
 # Post-processing for study.env
@@ -66,3 +78,4 @@ save(fm_albumin, h2_1_albumin, h2_2_albumin, COR_albumin,
      fm_vigorous, h2_1_vigorous, h2_2_vigorous, COR_vigorous,
      fm_study, h2_1_study, h2_2_study, COR_study,
      file = "blr_gxe_results.RData")
+
