@@ -1,3 +1,9 @@
+# Install and load necessary packages
+if (!require("BGLR")) {
+  install.packages("BGLR", repos = "http://cran.us.r-project.org")
+}
+library(BGLR)
+
 # Load prepared data
 load("prepared_believe_data.RData")
 
@@ -13,7 +19,7 @@ cat("Dimensions of X_1_albumin:", dim(X_1_albumin), "\n")
 cat("Dimensions of X_2_albumin:", dim(X_2_albumin), "\n")
 
 # Correct the groups parameter
-groups_albumin <- rep(1:2, each = length(y) / 2)
+groups_albumin <- rep(1:2, each = length(y) / 2)  # Adjusted to match the length of y
 cat("Length of groups_albumin:", length(groups_albumin), "\n")
 cat("Length of y:", length(y), "\n")
 
@@ -47,7 +53,7 @@ cat("Dimensions of X_1_vigorous:", dim(X_1_vigorous), "\n")
 cat("Dimensions of X_2_vigorous:", dim(X_2_vigorous), "\n")
 
 # Correct the groups parameter
-groups_vigorous <- rep(1:2, each = length(y) / 2)
+groups_vigorous <- rep(1:2, each = length(y) / 2)  # Adjusted to match the length of y
 cat("Length of groups_vigorous:", length(groups_vigorous), "\n")
 cat("Length of y:", length(y), "\n")
 
@@ -81,7 +87,7 @@ cat("Dimensions of X_1_study:", dim(X_1_study), "\n")
 cat("Dimensions of X_2_study:", dim(X_2_study), "\n")
 
 # Correct the groups parameter
-groups_study <- rep(1:2, each = length(y) / 2)
+groups_study <- rep(1:2, each = length(y) / 2)  # Adjusted to match the length of y
 cat("Length of groups_study:", length(groups_study), "\n")
 cat("Length of y:", length(y), "\n")
 
