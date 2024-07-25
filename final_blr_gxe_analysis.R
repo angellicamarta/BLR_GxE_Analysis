@@ -45,8 +45,13 @@ run_blr <- function(env_name, env_var, save_prefix) {
     stop("The number of rows in env_var_matrix does not match the number of rows in GRM.")
   }
   
+  # Ensure GRM and env_var_matrix are compatible for multiplication
+  if (ncol(GRM) != nrow(env_var_matrix)) {
+    stop("The number of columns in GRM does not match the number of rows in env_var_matrix.")
+  }
+  
   # Interaction term (gene x environment)
-  X_gxe <- as.matrix(GRM) %*% as.matrix(env_var_matrix)
+  X_gxe <- as.matrix(GRM) %*% t(as.matrix(env_var_matrix))
   
   # Define the BLR model
   fm <- BGLR(y = y, ETA = list(
@@ -94,6 +99,7 @@ run_blr <- function(env_name, env_var, save_prefix) {
     cat("Error: The BGLR analysis for ", env_name, " did not complete successfully.\n")
   }
 }
+
 
 # Prepare y after filtering
 y <- phenotype$T2D_status
