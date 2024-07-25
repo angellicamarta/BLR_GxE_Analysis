@@ -1,3 +1,13 @@
+# Install required packages if not already installed
+required_packages <- c("gap", "BGLR", "data.table")
+
+for (pkg in required_packages) {
+  if (!require(pkg, character.only = TRUE)) {
+    install.packages(pkg, repos = "http://cran.us.r-project.org")
+    library(pkg, character.only = TRUE)
+  }
+}
+
 library(gap)
 library(BGLR)
 library(data.table)
@@ -32,8 +42,18 @@ study_discrete <- filtered_data[[6]]
 # Filter GRM to match the filtered datasets
 GRM <- GRM[complete.cases(cbind(phenotype$T2D_status, albumin_discrete$Albumin, vigorous_activity$Vigorous10MinsActivity, categorical_covariates$Sex, quantitative_covariates$Age, quantitative_covariates$BMI, study_discrete$Study)), ]
 
+# Ensure Age and BMI are numeric
+quantitative_covariates$Age <- as.numeric(quantitative_covariates$Age)
+quantitative_covariates$BMI <- as.numeric(quantitative_covariates$BMI)
+
+# Ensure other covariates are factors
+categorical_covariates$Sex <- as.factor(categorical_covariates$Sex)
+albumin_discrete$Albumin <- as.factor(albumin_discrete$Albumin)
+vigorous_activity$Vigorous10MinsActivity <- as.factor(vigorous_activity$Vigorous10MinsActivity)
+study_discrete$Study <- as.factor(study_discrete$Study)
+
 # Prepare covariates by converting factors to dummy variables
-X_cov <- model.matrix(~ Sex + Age + BMI - 1, data = cbind(categorical_covariates, quantitative_covariates))
+X_cov <- model.matrix(~ Sex + Age + BMI - 1, data = data.frame(categorical_covariates, quantitative_covariates))
 
 # Function to run the BLR model for a given environmental variable and save results to a CSV file
 run_blr <- function(env_name, env_var, save_prefix) {
@@ -100,7 +120,6 @@ run_blr <- function(env_name, env_var, save_prefix) {
   }
 }
 
-
 # Prepare y after filtering
 y <- phenotype$T2D_status
 
@@ -114,3 +133,4 @@ run_blr(env_name = "Vigorous10MinsActivity", env_var = vigorous_activity$Vigorou
 
 # Study
 run_blr(env_name = "Study", env_var = study_discrete$Study, save_prefix = 'GxE_Study_')
+
