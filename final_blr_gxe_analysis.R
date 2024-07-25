@@ -41,6 +41,7 @@ study_discrete <- filtered_data[[6]]
 
 # Filter GRM to match the filtered datasets
 GRM <- GRM[complete.cases(cbind(phenotype$T2D_status, albumin_discrete$Albumin, vigorous_activity$Vigorous10MinsActivity, categorical_covariates$Sex, quantitative_covariates$Age, quantitative_covariates$BMI, study_discrete$Study)), ]
+GRM <- GRM[, complete.cases(cbind(phenotype$T2D_status, albumin_discrete$Albumin, vigorous_activity$Vigorous10MinsActivity, categorical_covariates$Sex, quantitative_covariates$Age, quantitative_covariates$BMI, study_discrete$Study))]
 
 # Ensure Age and BMI are numeric
 quantitative_covariates$Age <- as.numeric(quantitative_covariates$Age)
@@ -59,6 +60,10 @@ X_cov <- model.matrix(~ Sex + Age + BMI - 1, data = data.frame(categorical_covar
 run_blr <- function(env_name, env_var, save_prefix) {
   # Create model matrix for the environmental variable
   env_var_matrix <- model.matrix(~ env_var - 1)
+  
+  # Check and print dimensions of matrices
+  cat("Dimensions of GRM:", dim(GRM), "\n")
+  cat("Dimensions of env_var_matrix:", dim(env_var_matrix), "\n")
   
   # Ensure the dimensions of env_var_matrix match the number of individuals in GRM
   if (nrow(env_var_matrix) != nrow(GRM)) {
