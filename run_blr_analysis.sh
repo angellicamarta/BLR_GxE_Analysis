@@ -13,8 +13,4 @@
 
 module load R
 
-# Step 1: Prepare data
-Rscript prepare_believe_data.R
-
-# Step 2: Run BLR analysis
-Rscript blr_gxe_analysis.R
+Rscript final_blr_gxe_analysis.R
