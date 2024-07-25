@@ -7,7 +7,7 @@ GRM <- with(ReadGRMBin("/home/am3194/rds/hpc-work/gcta_believe/merged_grm2"), GR
 
 # Read phenotype and covariate data without headers and assign column names
 phenotype <- read.table("/home/am3194/rds/hpc-work/gcta_believe/pheno_data/BELIEVE.pheno", header = FALSE, col.names = c("FID", "IID", "T2D_status"))
-albumin_discrete <- read.table("/home/am3194/rds/hpc-work/gcta_believe/pheno_data/Albumin_discrete_file.env",header = FALSE, col.names = c("FID", "IID", "Albumin"))
+albumin_discrete <- read.table("/home/am3194/rds/hpc-work/gcta_believe/pheno_data/Albumin_discrete_file.env", header = FALSE, col.names = c("FID", "IID", "Albumin"))
 vigorous_activity <- read.table("/home/am3194/rds/hpc-work/gcta_believe/pheno_data/Vigorous10MinsActivity.env", header = FALSE, col.names = c("FID", "IID", "Vigorous10MinsActivity"))
 categorical_covariates <- read.table("/home/am3194/rds/hpc-work/gcta_believe/pheno_data/C.covar", header = FALSE, col.names = c("FID", "IID", "Sex"))
 quantitative_covariates <- read.table("/home/am3194/rds/hpc-work/gcta_believe/pheno_data/Q.covar", header = FALSE, col.names = c("FID", "IID", "Age", "BMI"))
@@ -15,10 +15,16 @@ study_discrete <- read.table("/home/am3194/rds/hpc-work/gcta_believe/pheno_data/
 
 # Prepare phenotype and covariate matrices
 y <- as.factor(phenotype$T2D_status)
+
+# Remove missing data coded as -9
+y <- y[y != "-9"]
+X <- X[y != "-9", ]
+
+# Convert necessary variables to factors
 PA <- as.numeric(vigorous_activity$Vigorous10MinsActivity)
 BMI <- as.numeric(quantitative_covariates$BMI)
 Age <- as.numeric(quantitative_covariates$Age)
-Sex <- as.factor((categorical_covariates$Sex))
+Sex <- as.factor(categorical_covariates$Sex)
 Albumin <- as.factor(albumin_discrete$Albumin)
 Study <- as.factor(study_discrete$Study)
 
