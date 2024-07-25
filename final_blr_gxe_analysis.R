@@ -15,13 +15,14 @@ library(data.table)
 # Read GRM data using the gap package
 GRM <- with(ReadGRMBin("/home/am3194/rds/hpc-work/gcta_believe/merged_grm2"), GRM)
 
-# Function to filter missing data
-filter_missing_data <- function(...) {
+# Function to filter out rows with -9
+filter_negative_nine <- function(...) {
   datasets <- list(...)
-  complete_cases <- complete.cases(do.call(cbind, datasets))
-  return(lapply(datasets, function(x) x[complete_cases, , drop = FALSE]))
+  combined <- do.call(cbind, datasets)
+  filtered_indices <- apply(combined, 1, function(row) all(row != -9))
+  return(lapply(datasets, function(x) x[filtered_indices, , drop = FALSE]))
 }
-
+                
 # Prepare phenotype and covariate data
 phenotype <- read.table("/home/am3194/rds/hpc-work/gcta_believe/pheno_data/BELIEVE.pheno", header = FALSE, col.names = c("FID", "IID", "T2D_status"))
 albumin_discrete <- read.table("/home/am3194/rds/hpc-work/gcta_believe/pheno_data/Albumin_discrete_file.env", header = FALSE, col.names = c("FID", "IID", "Albumin"))
