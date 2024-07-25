@@ -1,0 +1,58 @@
+# Function to run the BGLR model
+run_blr <- function(y, GRM, env_var_matrix, X_cov, save_prefix) {
+  # Define the full BLR model (with GEI term)
+  X_gxe <- as.matrix(GRM) %*% t(as.matrix(env_var_matrix))
+  fm_full <- BGLR(y = y, ETA = list(
+    main = list(X = as.matrix(GRM), model = 'BRR'),
+    env = list(X = as.matrix(env_var_matrix), model = 'BRR'),
+    gxe = list(X = X_gxe, model = 'BRR'),
+    cov = list(X = as.matrix(X_cov), model = 'FIXED')
+  ), nIter = 6000, burnIn = 1000, saveAt = paste0(save_prefix, "_full_"), groups = rep(1, length(y)))
+  
+  # Define the reduced BLR model (without GEI term)
+  fm_reduced <- BGLR(y = y, ETA = list(
+    main = list(X = as.matrix(GRM), model = 'BRR'),
+    env = list(X = as.matrix(env_var_matrix), model = 'BRR'),
+    cov = list(X = as.matrix(X_cov), model = 'FIXED')
+  ), nIter = 6000, burnIn = 1000, saveAt = paste0(save_prefix, "_reduced_"), groups = rep(1, length(y)))
+  
+  # Extract DIC values for both models
+  dic_full <- fm_full$DIC
+  dic_reduced <- fm_reduced$DIC
+  
+  # Calculate the difference in DIC
+  dic_diff <- dic_reduced - dic_full
+  
+  # Print DIC values and their difference
+  cat("DIC (Full Model):", dic_full, "\n")
+  cat("DIC (Reduced Model):", dic_reduced, "\n")
+  cat("Difference in DIC:", dic_diff, "\n")
+  
+  return(list(dic_full = dic_full, dic_reduced = dic_reduced, dic_diff = dic_diff))
+}
+
+# Prepare y after filtering
+y <- phenotype$T2D_status
+
+# Prepare model matrices
+X_cov <- model.matrix(~ Sex + Age + BMI - 1, data = data.frame(categorical_covariates, quantitative_covariates))
+
+# Model matrix for environmental variables
+albumin_matrix <- model.matrix(~ albumin_discrete$Albumin - 1)
+vigorous_activity_matrix <- model.matrix(~ vigorous_activity$Vigorous10MinsActivity - 1)
+study_matrix <- model.matrix(~ study_discrete$Study - 1)
+
+# Run models for each environmental variable and save results to CSV files
+albumin_results <- run_blr(y = y, GRM = GRM, env_var_matrix = albumin_matrix, X_cov = X_cov, save_prefix = 'GxE_Albumin')
+vigorous_results <- run_blr(y = y, GRM = GRM, env_var_matrix = vigorous_activity_matrix, X_cov = X_cov, save_prefix = 'GxE_Vigorous')
+study_results <- run_blr(y = y, GRM = GRM, env_var_matrix = study_matrix, X_cov = X_cov, save_prefix = 'GxE_Study')
+
+# Save DIC results to CSV
+dic_results <- data.frame(
+  Variable = c("Albumin", "Vigorous10MinsActivity", "Study"),
+  DIC_Full = c(albumin_results$dic_full, vigorous_results$dic_full, study_results$dic_full),
+  DIC_Reduced = c(albumin_results$dic_reduced, vigorous_results$dic_reduced, study_results$dic_reduced),
+  DIC_Diff = c(albumin_results$dic_diff, vigorous_results$dic_diff, study_results$dic_diff)
+)
+fwrite(dic_results, "DIC_results.csv")
+
