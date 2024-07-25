@@ -1,4 +1,6 @@
+library(gap)
 library(BGLR)
+library(data.table)
 
 # Read GRM data using the gap package
 GRM <- with(ReadGRMBin("/home/am3194/rds/hpc-work/gcta_believe/merged_grm2"), GRM)
@@ -27,13 +29,13 @@ categorical_covariates <- filtered_data[[4]]
 quantitative_covariates <- filtered_data[[5]]
 study_discrete <- filtered_data[[6]]
 
-# Ensure GRM matches the number of rows in filtered datasets
+# Filter GRM to match the filtered datasets
 GRM <- GRM[complete.cases(cbind(phenotype$T2D_status, albumin_discrete$Albumin, vigorous_activity$Vigorous10MinsActivity, categorical_covariates$Sex, quantitative_covariates$Age, quantitative_covariates$BMI, study_discrete$Study)), ]
 
 # Prepare covariates by converting factors to dummy variables
 X_cov <- model.matrix(~ Sex + Age + BMI - 1, data = cbind(categorical_covariates, quantitative_covariates))
 
-# Function to run the BLR model for a given environmental variable
+# Function to run the BLR model for a given environmental variable and save results to a CSV file
 run_blr <- function(env_name, env_var, save_prefix) {
   # Create model matrix for the environmental variable
   env_var_matrix <- model.matrix(~ env_var - 1)
@@ -44,12 +46,12 @@ run_blr <- function(env_name, env_var, save_prefix) {
   }
   
   # Interaction term (gene x environment)
-  X_gxe <- as.matrix(GRM) %*% env_var_matrix
+  X_gxe <- as.matrix(GRM) %*% as.matrix(env_var_matrix)
   
   # Define the BLR model
   fm <- BGLR(y = y, ETA = list(
     main = list(X = as.matrix(GRM), model = 'BRR'),
-    env = list(X = env_var_matrix, model = 'BRR'),
+    env = list(X = as.matrix(env_var_matrix), model = 'BRR'),
     gxe = list(X = X_gxe, model = 'BRR'),
     cov = list(X = as.matrix(X_cov), model = 'FIXED')
   ), nIter = 6000, burnIn = 1000, saveAt = save_prefix, groups = rep(1, length(y)))
@@ -79,6 +81,10 @@ run_blr <- function(env_name, env_var, save_prefix) {
       # Calculating genetic correlation
       COR <- varU_main / sqrt(varU1 * varU2)
       
+      # Save results to a CSV file
+      results <- data.frame(h2_1 = h2_1, h2_2 = h2_2, COR = COR)
+      fwrite(results, paste0(save_prefix, 'results.csv'))
+      
       # Output results
       print(list(h2_1 = h2_1, h2_2 = h2_2, COR = COR))
     } else {
@@ -92,7 +98,7 @@ run_blr <- function(env_name, env_var, save_prefix) {
 # Prepare y after filtering
 y <- phenotype$T2D_status
 
-# Run the model for each environmental variable
+# Run the model for each environmental variable and save results to CSV files
 
 # Albumin
 run_blr(env_name = "Albumin", env_var = albumin_discrete$Albumin, save_prefix = 'GxE_Albumin_')
