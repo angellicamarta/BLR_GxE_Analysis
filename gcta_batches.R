@@ -56,21 +56,11 @@ process_batch <- function(indices, batch_number) {
   # Create IDs for the batch
   ids_batch <- phenotype_batch[, c("FID", "IID")]
 
-  # Write GRM files for the batch
-  write.table(ids_batch, file = paste0("GRM_batch_", batch_number, ".grm.id"), quote = FALSE, row.names = FALSE, col.names = FALSE)
-  
   # Convert GRM matrix into vector form
   GRM_batch_vec <- as.vector(GRM_batch)
-  grm_bin_con <- file(paste0("GRM_batch_", batch_number, ".grm.bin"), "wb")
-  n_bin_con <- file(paste0("GRM_batch_", batch_number, ".grm.N.bin"), "wb")
-  
-  on.exit({
-    close(grm_bin_con)
-    close(n_bin_con)
-  }, add = TRUE)
-  
-  writeBin(GRM_batch_vec, grm_bin_con, size = 4)
-  writeBin(rep(1, length(GRM_batch_vec)), n_bin_con, size = 4)
+
+  # Write GRM files for the batch using WriteGRMBin
+  WriteGRMBin(prefix = paste0("GRM_batch_", batch_number), grm = GRM_batch_vec, N = length(indices), id = ids_batch, size = 4)
 
   # Write data files for the batch
   write.table(phenotype_batch, file = paste0("phenotype_batch_", batch_number, ".pheno"), row.names = FALSE, col.names = FALSE, quote = FALSE)
@@ -88,5 +78,4 @@ process_batch(indices_batch_3, 3)
 process_batch(indices_batch_4, 4)
 process_batch(indices_batch_5, 5)
 process_batch(indices_batch_6, 6)
-
 
