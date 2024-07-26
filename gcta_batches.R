@@ -18,7 +18,7 @@ combined_data <- cbind(phenotype$T2D_status, albumin_discrete$Albumin, vigorous_
 
 # Identify valid rows (excluding those with -9)
 valid_indices <- apply(combined_data, 1, function(row) all(row != -9))
-                       
+
 # Filter each dataset individually
 phenotype <- phenotype[valid_indices, ]
 albumin_discrete <- albumin_discrete[valid_indices, ]
@@ -33,13 +33,13 @@ GRM <- GRM[valid_indices, valid_indices]
 # Split indices for 5 batches
 n_samples <- length(valid_indices)
 batch_size <- floor(n_samples / 5)
-remainder <- n_samples %% 5
 
+# Indices for each batch
 indices_batch_1 <- 1:batch_size
 indices_batch_2 <- (batch_size + 1):(2 * batch_size)
 indices_batch_3 <- (2 * batch_size + 1):(3 * batch_size)
 indices_batch_4 <- (3 * batch_size + 1):(4 * batch_size)
-indices_batch_5 <- (4 * batch_size + 1):(5 * batch_size + remainder)
+indices_batch_5 <- (4 * batch_size + 1):n_samples
 
 # Batch 1
 GRM_batch_1 <- GRM[indices_batch_1, indices_batch_1]
@@ -100,5 +100,6 @@ GRM_batch_5_vec <- as.vector(GRM_batch_5)
 write.table(ids_batch_5, file = "GRM_batch_5.grm.id", quote = FALSE, row.names = FALSE, col.names = FALSE)
 writeBin(GRM_batch_5_vec, "GRM_batch_5.grm.bin", size = 4)
 writeBin(rep(1, length(GRM_batch_5_vec)), "GRM_batch_5.grm.N.bin", size = 4)
+
 
                        
