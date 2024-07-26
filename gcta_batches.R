@@ -1,8 +1,9 @@
+# Load necessary libraries
+library(gap)
+
 # Load data
 load("prepared_believe_data.RData")
 rm(X)
-
-library(gap)
 
 # Read data files
 phenotype <- read.table("/home/am3194/rds/hpc-work/gcta_believe/pheno_data/BELIEVE.pheno", header = FALSE, col.names = c("FID", "IID", "T2D_status"))
@@ -57,7 +58,11 @@ process_batch <- function(indices, batch_number) {
 
   # Write GRM files for the batch
   write.table(ids_batch, file = paste0("GRM_batch_", batch_number, ".grm.id"), quote = FALSE, row.names = FALSE, col.names = FALSE)
-  WriteGRMBin(prefix = paste0("GRM_batch_", batch_number), grm = GRM_batch, N = nrow(GRM_batch), id = ids_batch, size = 4)
+  
+  # Convert GRM matrix into vector form
+  GRM_batch_vec <- as.vector(GRM_batch)
+  writeBin(GRM_batch_vec, paste0("GRM_batch_", batch_number, ".grm.bin"), size = 4)
+  writeBin(rep(1, length(GRM_batch_vec)), paste0("GRM_batch_", batch_number, ".grm.N.bin"), size = 4)
 
   # Write data files for the batch
   write.table(phenotype_batch, file = paste0("phenotype_batch_", batch_number, ".pheno"), row.names = FALSE, col.names = FALSE, quote = FALSE)
@@ -75,3 +80,4 @@ process_batch(indices_batch_3, 3)
 process_batch(indices_batch_4, 4)
 process_batch(indices_batch_5, 5)
 process_batch(indices_batch_6, 6)
+
