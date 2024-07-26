@@ -41,23 +41,25 @@ indices_batch_4 <- (3 * batch_size + 1):(4 * batch_size)
 indices_batch_5 <- (4 * batch_size + 1):(5 * batch_size)
 indices_batch_6 <- (5 * batch_size + 1):(5 * batch_size + last_batch_size)
 
-# Function to create and save batch data
-create_save_batch <- function(batch_indices, batch_number) {
-  GRM_batch <- GRM[batch_indices, batch_indices]
-  ids_batch <- phenotype[batch_indices, c("FID", "IID")]
-  GRM_batch_vec <- as.vector(GRM_batch)
-  
+# Helper function to process each batch
+process_batch <- function(indices, batch_number) {
+  # Filter GRM and data for the batch
+  GRM_batch <- GRM[indices, indices]
+  phenotype_batch <- phenotype[indices, ]
+  albumin_discrete_batch <- albumin_discrete[indices, ]
+  vigorous_activity_batch <- vigorous_activity[indices, ]
+  categorical_covariates_batch <- categorical_covariates[indices, ]
+  quantitative_covariates_batch <- quantitative_covariates[indices, ]
+  study_discrete_batch <- study_discrete[indices, ]
+
+  # Create IDs for the batch
+  ids_batch <- phenotype_batch[, c("FID", "IID")]
+
+  # Write GRM files for the batch
   write.table(ids_batch, file = paste0("GRM_batch_", batch_number, ".grm.id"), quote = FALSE, row.names = FALSE, col.names = FALSE)
-  writeBin(GRM_batch_vec, paste0("GRM_batch_", batch_number, ".grm.bin"), size = 4)
-  writeBin(rep(1, length(GRM_batch_vec)), paste0("GRM_batch_", batch_number, ".grm.N.bin"), size = 4)
-  
-  phenotype_batch <- phenotype[batch_indices, ]
-  albumin_discrete_batch <- albumin_discrete[batch_indices, ]
-  vigorous_activity_batch <- vigorous_activity[batch_indices, ]
-  categorical_covariates_batch <- categorical_covariates[batch_indices, ]
-  quantitative_covariates_batch <- quantitative_covariates[batch_indices, ]
-  study_discrete_batch <- study_discrete[batch_indices, ]
-  
+  WriteGRMBin(prefix = paste0("GRM_batch_", batch_number), grm = GRM_batch, N = nrow(GRM_batch), id = ids_batch, size = 4)
+
+  # Write data files for the batch
   write.table(phenotype_batch, file = paste0("phenotype_batch_", batch_number, ".pheno"), row.names = FALSE, col.names = FALSE, quote = FALSE)
   write.table(albumin_discrete_batch, file = paste0("albumin_batch_", batch_number, ".env"), row.names = FALSE, col.names = FALSE, quote = FALSE)
   write.table(vigorous_activity_batch, file = paste0("vigorous_batch_", batch_number, ".env"), row.names = FALSE, col.names = FALSE, quote = FALSE)
@@ -66,10 +68,10 @@ create_save_batch <- function(batch_indices, batch_number) {
   write.table(study_discrete_batch, file = paste0("study_batch_", batch_number, ".env"), row.names = FALSE, col.names = FALSE, quote = FALSE)
 }
 
-# Create and save batches
-create_save_batch(indices_batch_1, 1)
-create_save_batch(indices_batch_2, 2)
-create_save_batch(indices_batch_3, 3)
-create_save_batch(indices_batch_4, 4)
-create_save_batch(indices_batch_5, 5)
-create_save_batch(indices_batch_6, 6)
+# Process each batch
+process_batch(indices_batch_1, 1)
+process_batch(indices_batch_2, 2)
+process_batch(indices_batch_3, 3)
+process_batch(indices_batch_4, 4)
+process_batch(indices_batch_5, 5)
+process_batch(indices_batch_6, 6)
