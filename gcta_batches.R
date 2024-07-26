@@ -18,7 +18,7 @@ combined_data <- cbind(phenotype$T2D_status, albumin_discrete$Albumin, vigorous_
 
 # Identify valid rows (excluding those with -9)
 valid_indices <- apply(combined_data, 1, function(row) all(row != -9))
-
+                       
 # Filter each dataset individually
 phenotype <- phenotype[valid_indices, ]
 albumin_discrete <- albumin_discrete[valid_indices, ]
@@ -30,47 +30,44 @@ study_discrete <- study_discrete[valid_indices, ]
 # Use the valid indices to filter the GRM
 GRM <- GRM[valid_indices, valid_indices]
 
-# Number of batches
-n_batches <- 6
+# Split indices for batches
+indices_batch_1 <- 1:(length(valid_indices) / 3)
+indices_batch_2 <- (length(valid_indices) / 3 + 1):(2 * length(valid_indices) / 3)
+indices_batch_3 <- (2 * length(valid_indices) / 3 + 1):length(valid_indices)
 
-# Create indices for the 6 batches
-batch_indices <- split(1:nrow(GRM), sort(1:nrow(GRM) %% n_batches))
+# Batch 1
+GRM_batch_1 <- GRM[indices_batch_1, indices_batch_1]
+ids_batch_1 <- phenotype[indices_batch_1, c("FID", "IID")]
 
-# Extract indices for Batch 1
-indices <- batch_indices[[1]]
-
-# Filter GRM and data for Batch 1
-GRM_batch_1 <- GRM[indices, indices]
-phenotype_batch_1 <- phenotype[indices, ]
-albumin_discrete_batch_1 <- albumin_discrete[indices, ]
-vigorous_activity_batch_1 <- vigorous_activity[indices, ]
-categorical_covariates_batch_1 <- categorical_covariates[indices, ]
-quantitative_covariates_batch_1 <- quantitative_covariates[indices, ]
-study_discrete_batch_1 <- study_discrete[indices, ]
-
-# Create IDs for Batch 1
-ids_batch_1 <- phenotype_batch_1[, c("FID", "IID")]
+# Convert GRM matrix into vector form
+GRM_batch_1_vec <- as.vector(GRM_batch_1)
 
 # Write GRM files for Batch 1
 write.table(ids_batch_1, file = "GRM_batch_1.grm.id", quote = FALSE, row.names = FALSE, col.names = FALSE)
+writeBin(GRM_batch_1_vec, "GRM_batch_1.grm.bin", size = 4)
+writeBin(rep(1, length(GRM_batch_1_vec)), "GRM_batch_1.grm.N.bin", size = 4)
 
-# Manually write GRM to binary file
-write_grm_bin <- function(grm, prefix) {
-  binfile <- paste0(prefix, ".grm.bin")
-  n <- nrow(grm)
-  grm_vec <- as.vector(grm)
-  writeBin(grm_vec, binfile, size = 4)
-  nfile <- paste0(prefix, ".grm.N.bin")
-  writeBin(rep(1L, length(grm_vec)), nfile, size = 4)
-}
+# Batch 2
+GRM_batch_2 <- GRM[indices_batch_2, indices_batch_2]
+ids_batch_2 <- phenotype[indices_batch_2, c("FID", "IID")]
 
-write_grm_bin(GRM_batch_1, "GRM_batch_1")
+# Convert GRM matrix into vector form
+GRM_batch_2_vec <- as.vector(GRM_batch_2)
 
-# Write data files for Batch 1
-write.table(phenotype_batch_1, file = "phenotype_batch_1.pheno", row.names = FALSE, col.names = FALSE, quote = FALSE)
-write.table(albumin_discrete_batch_1, file = "albumin_batch_1.env", row.names = FALSE, col.names = FALSE, quote = FALSE)
-write.table(vigorous_activity_batch_1, file = "vigorous_batch_1.env", row.names = FALSE, col.names = FALSE, quote = FALSE)
-write.table(categorical_covariates_batch_1, file = "categorical_covariates_batch_1.covar", row.names = FALSE, col.names = FALSE, quote = FALSE)
-write.table(quantitative_covariates_batch_1, file = "quantitative_covariates_batch_1.qcovar", row.names = FALSE, col.names = FALSE, quote = FALSE)
-write.table(study_discrete_batch_1, file = "study_batch_1.env", row.names = FALSE, col.names = FALSE, quote = FALSE)
+# Write GRM files for Batch 2
+write.table(ids_batch_2, file = "GRM_batch_2.grm.id", quote = FALSE, row.names = FALSE, col.names = FALSE)
+writeBin(GRM_batch_2_vec, "GRM_batch_2.grm.bin", size = 4)
+writeBin(rep(1, length(GRM_batch_2_vec)), "GRM_batch_2.grm.N.bin", size = 4)
 
+# Batch 3
+GRM_batch_3 <- GRM[indices_batch_3, indices_batch_3]
+ids_batch_3 <- phenotype[indices_batch_3, c("FID", "IID")]
+
+# Convert GRM matrix into vector form
+GRM_batch_3_vec <- as.vector(GRM_batch_3)
+
+# Write GRM files for Batch 3
+write.table(ids_batch_3, file = "GRM_batch_3.grm.id", quote = FALSE, row.names = FALSE, col.names = FALSE)
+writeBin(GRM_batch_3_vec, "GRM_batch_3.grm.bin", size = 4)
+writeBin(rep(1, length(GRM_batch_3_vec)), "GRM_batch_3.grm.N.bin", size = 4)
+                       
