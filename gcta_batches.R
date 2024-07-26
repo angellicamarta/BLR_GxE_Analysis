@@ -1,9 +1,8 @@
-# Load necessary libraries
-library(gap)
-
 # Load data
 load("prepared_believe_data.RData")
 rm(X)
+
+library(gap)
 
 # Read data files
 phenotype <- read.table("/home/am3194/rds/hpc-work/gcta_believe/pheno_data/BELIEVE.pheno", header = FALSE, col.names = c("FID", "IID", "T2D_status"))
@@ -42,53 +41,35 @@ indices_batch_4 <- (3 * batch_size + 1):(4 * batch_size)
 indices_batch_5 <- (4 * batch_size + 1):(5 * batch_size)
 indices_batch_6 <- (5 * batch_size + 1):(5 * batch_size + last_batch_size)
 
-# Write GRM files for Batch 1
-GRM_batch_1 <- GRM[indices_batch_1, indices_batch_1]
-ids_batch_1 <- phenotype[indices_batch_1, c("FID", "IID")]
-GRM_batch_1_vec <- as.vector(GRM_batch_1)
-write.table(ids_batch_1, file = "GRM_batch_1.grm.id", quote = FALSE, row.names = FALSE, col.names = FALSE)
-writeBin(GRM_batch_1_vec, "GRM_batch_1.grm.bin", size = 4)
-writeBin(rep(1, length(GRM_batch_1_vec)), "GRM_batch_1.grm.N.bin", size = 4)
+# Function to create and save batch data
+create_save_batch <- function(batch_indices, batch_number) {
+  GRM_batch <- GRM[batch_indices, batch_indices]
+  ids_batch <- phenotype[batch_indices, c("FID", "IID")]
+  GRM_batch_vec <- as.vector(GRM_batch)
+  
+  write.table(ids_batch, file = paste0("GRM_batch_", batch_number, ".grm.id"), quote = FALSE, row.names = FALSE, col.names = FALSE)
+  writeBin(GRM_batch_vec, paste0("GRM_batch_", batch_number, ".grm.bin"), size = 4)
+  writeBin(rep(1, length(GRM_batch_vec)), paste0("GRM_batch_", batch_number, ".grm.N.bin"), size = 4)
+  
+  phenotype_batch <- phenotype[batch_indices, ]
+  albumin_discrete_batch <- albumin_discrete[batch_indices, ]
+  vigorous_activity_batch <- vigorous_activity[batch_indices, ]
+  categorical_covariates_batch <- categorical_covariates[batch_indices, ]
+  quantitative_covariates_batch <- quantitative_covariates[batch_indices, ]
+  study_discrete_batch <- study_discrete[batch_indices, ]
+  
+  write.table(phenotype_batch, file = paste0("phenotype_batch_", batch_number, ".pheno"), row.names = FALSE, col.names = FALSE, quote = FALSE)
+  write.table(albumin_discrete_batch, file = paste0("albumin_batch_", batch_number, ".env"), row.names = FALSE, col.names = FALSE, quote = FALSE)
+  write.table(vigorous_activity_batch, file = paste0("vigorous_batch_", batch_number, ".env"), row.names = FALSE, col.names = FALSE, quote = FALSE)
+  write.table(categorical_covariates_batch, file = paste0("categorical_covariates_batch_", batch_number, ".covar"), row.names = FALSE, col.names = FALSE, quote = FALSE)
+  write.table(quantitative_covariates_batch, file = paste0("quantitative_covariates_batch_", batch_number, ".qcovar"), row.names = FALSE, col.names = FALSE, quote = FALSE)
+  write.table(study_discrete_batch, file = paste0("study_batch_", batch_number, ".env"), row.names = FALSE, col.names = FALSE, quote = FALSE)
+}
 
-# Write GRM files for Batch 2
-GRM_batch_2 <- GRM[indices_batch_2, indices_batch_2]
-ids_batch_2 <- phenotype[indices_batch_2, c("FID", "IID")]
-GRM_batch_2_vec <- as.vector(GRM_batch_2)
-write.table(ids_batch_2, file = "GRM_batch_2.grm.id", quote = FALSE, row.names = FALSE, col.names = FALSE)
-writeBin(GRM_batch_2_vec, "GRM_batch_2.grm.bin", size = 4)
-writeBin(rep(1, length(GRM_batch_2_vec)), "GRM_batch_2.grm.N.bin", size = 4)
-
-# Write GRM files for Batch 3
-GRM_batch_3 <- GRM[indices_batch_3, indices_batch_3]
-ids_batch_3 <- phenotype[indices_batch_3, c("FID", "IID")]
-GRM_batch_3_vec <- as.vector(GRM_batch_3)
-write.table(ids_batch_3, file = "GRM_batch_3.grm.id", quote = FALSE, row.names = FALSE, col.names = FALSE)
-writeBin(GRM_batch_3_vec, "GRM_batch_3.grm.bin", size = 4)
-writeBin(rep(1, length(GRM_batch_3_vec)), "GRM_batch_3.grm.N.bin", size = 4)
-
-# Write GRM files for Batch 4
-GRM_batch_4 <- GRM[indices_batch_4, indices_batch_4]
-ids_batch_4 <- phenotype[indices_batch_4, c("FID", "IID")]
-GRM_batch_4_vec <- as.vector(GRM_batch_4)
-write.table(ids_batch_4, file = "GRM_batch_4.grm.id", quote = FALSE, row.names = FALSE, col.names = FALSE)
-writeBin(GRM_batch_4_vec, "GRM_batch_4.grm.bin", size = 4)
-writeBin(rep(1, length(GRM_batch_4_vec)), "GRM_batch_4.grm.N.bin", size = 4)
-
-# Write GRM files for Batch 5
-GRM_batch_5 <- GRM[indices_batch_5, indices_batch_5]
-ids_batch_5 <- phenotype[indices_batch_5, c("FID", "IID")]
-GRM_batch_5_vec <- as.vector(GRM_batch_5)
-write.table(ids_batch_5, file = "GRM_batch_5.grm.id", quote = FALSE, row.names = FALSE, col.names = FALSE)
-writeBin(GRM_batch_5_vec, "GRM_batch_5.grm.bin", size = 4)
-writeBin(rep(1, length(GRM_batch_5_vec)), "GRM_batch_5.grm.N.bin", size = 4)
-
-# Write GRM files for Batch 6
-GRM_batch_6 <- GRM[indices_batch_6, indices_batch_6]
-ids_batch_6 <- phenotype[indices_batch_6, c("FID", "IID")]
-GRM_batch_6_vec <- as.vector(GRM_batch_6)
-write.table(ids_batch_6, file = "GRM_batch_6.grm.id", quote = FALSE, row.names = FALSE, col.names = FALSE)
-writeBin(GRM_batch_6_vec, "GRM_batch_6.grm.bin", size = 4)
-writeBin(rep(1, length(GRM_batch_6_vec)), "GRM_batch_6.grm.N.bin", size = 4)
-
-
-                       
+# Create and save batches
+create_save_batch(indices_batch_1, 1)
+create_save_batch(indices_batch_2, 2)
+create_save_batch(indices_batch_3, 3)
+create_save_batch(indices_batch_4, 4)
+create_save_batch(indices_batch_5, 5)
+create_save_batch(indices_batch_6, 6)
