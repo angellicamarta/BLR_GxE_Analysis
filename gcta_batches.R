@@ -30,21 +30,7 @@ study_discrete <- study_discrete[valid_indices, ]
 # Use the valid indices to filter the GRM
 GRM <- GRM[valid_indices, valid_indices]
 
-# Define batch sizes
-batch_size <- 10000
-last_batch_size <- 13717
-
-# Batch indices
-indices_batch_1 <- 1:batch_size
-indices_batch_2 <- (batch_size + 1):(2 * batch_size)
-indices_batch_3 <- (2 * batch_size + 1):(3 * batch_size)
-indices_batch_4 <- (3 * batch_size + 1):(4 * batch_size)
-indices_batch_5 <- (4 * batch_size + 1):(5 * batch_size)
-indices_batch_6 <- (5 * batch_size + 1):(5 * batch_size + last_batch_size)
-
-# Helper function to process each batch
-process_batch <- function(indices, batch_number) {
-  # Filter GRM and data for the batch
+h
   GRM_batch <- GRM[indices, indices]
   phenotype_batch <- phenotype[indices, ]
   albumin_discrete_batch <- albumin_discrete[indices, ]
@@ -80,4 +66,5 @@ process_batch(indices_batch_3, 3)
 process_batch(indices_batch_4, 4)
 process_batch(indices_batch_5, 5)
 process_batch(indices_batch_6, 6)
+
 
