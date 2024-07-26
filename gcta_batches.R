@@ -30,7 +30,21 @@ study_discrete <- study_discrete[valid_indices, ]
 # Use the valid indices to filter the GRM
 GRM <- GRM[valid_indices, valid_indices]
 
-h
+# Define batch sizes
+batch_size <- 10000
+last_batch_size <- 13717
+
+# Batch indices
+indices_batch_1 <- 1:batch_size
+indices_batch_2 <- (batch_size + 1):(2 * batch_size)
+indices_batch_3 <- (2 * batch_size + 1):(3 * batch_size)
+indices_batch_4 <- (3 * batch_size + 1):(4 * batch_size)
+indices_batch_5 <- (4 * batch_size + 1):(5 * batch_size)
+indices_batch_6 <- (5 * batch_size + 1):(5 * batch_size + last_batch_size)
+
+# Helper function to process each batch
+process_batch <- function(indices, batch_number) {
+  # Filter GRM and data for the batch
   GRM_batch <- GRM[indices, indices]
   phenotype_batch <- phenotype[indices, ]
   albumin_discrete_batch <- albumin_discrete[indices, ]
@@ -47,8 +61,16 @@ h
   
   # Convert GRM matrix into vector form
   GRM_batch_vec <- as.vector(GRM_batch)
-  writeBin(GRM_batch_vec, paste0("GRM_batch_", batch_number, ".grm.bin"), size = 4)
-  writeBin(rep(1, length(GRM_batch_vec)), paste0("GRM_batch_", batch_number, ".grm.N.bin"), size = 4)
+  grm_bin_con <- file(paste0("GRM_batch_", batch_number, ".grm.bin"), "wb")
+  n_bin_con <- file(paste0("GRM_batch_", batch_number, ".grm.N.bin"), "wb")
+  
+  on.exit({
+    close(grm_bin_con)
+    close(n_bin_con)
+  }, add = TRUE)
+  
+  writeBin(GRM_batch_vec, grm_bin_con, size = 4)
+  writeBin(rep(1, length(GRM_batch_vec)), n_bin_con, size = 4)
 
   # Write data files for the batch
   write.table(phenotype_batch, file = paste0("phenotype_batch_", batch_number, ".pheno"), row.names = FALSE, col.names = FALSE, quote = FALSE)
