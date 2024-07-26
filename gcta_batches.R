@@ -18,7 +18,7 @@ combined_data <- cbind(phenotype$T2D_status, albumin_discrete$Albumin, vigorous_
 
 # Identify valid rows (excluding those with -9)
 valid_indices <- apply(combined_data, 1, function(row) all(row != -9))
-                       
+
 # Filter each dataset individually
 phenotype <- phenotype[valid_indices, ]
 albumin_discrete <- albumin_discrete[valid_indices, ]
@@ -30,10 +30,13 @@ study_discrete <- study_discrete[valid_indices, ]
 # Use the valid indices to filter the GRM
 GRM <- GRM[valid_indices, valid_indices]
 
-# Split indices for batches
-indices_batch_1 <- 1:(length(valid_indices) / 3)
-indices_batch_2 <- (length(valid_indices) / 3 + 1):(2 * length(valid_indices) / 3)
-indices_batch_3 <- (2 * length(valid_indices) / 3 + 1):length(valid_indices)
+# Split indices for 5 batches
+batch_size <- floor(length(valid_indices) / 5)
+indices_batch_1 <- 1:batch_size
+indices_batch_2 <- (batch_size + 1):(2 * batch_size)
+indices_batch_3 <- (2 * batch_size + 1):(3 * batch_size)
+indices_batch_4 <- (3 * batch_size + 1):(4 * batch_size)
+indices_batch_5 <- (4 * batch_size + 1):length(valid_indices)
 
 # Batch 1
 GRM_batch_1 <- GRM[indices_batch_1, indices_batch_1]
@@ -70,4 +73,29 @@ GRM_batch_3_vec <- as.vector(GRM_batch_3)
 write.table(ids_batch_3, file = "GRM_batch_3.grm.id", quote = FALSE, row.names = FALSE, col.names = FALSE)
 writeBin(GRM_batch_3_vec, "GRM_batch_3.grm.bin", size = 4)
 writeBin(rep(1, length(GRM_batch_3_vec)), "GRM_batch_3.grm.N.bin", size = 4)
+
+# Batch 4
+GRM_batch_4 <- GRM[indices_batch_4, indices_batch_4]
+ids_batch_4 <- phenotype[indices_batch_4, c("FID", "IID")]
+
+# Convert GRM matrix into vector form
+GRM_batch_4_vec <- as.vector(GRM_batch_4)
+
+# Write GRM files for Batch 4
+write.table(ids_batch_4, file = "GRM_batch_4.grm.id", quote = FALSE, row.names = FALSE, col.names = FALSE)
+writeBin(GRM_batch_4_vec, "GRM_batch_4.grm.bin", size = 4)
+writeBin(rep(1, length(GRM_batch_4_vec)), "GRM_batch_4.grm.N.bin", size = 4)
+
+# Batch 5
+GRM_batch_5 <- GRM[indices_batch_5, indices_batch_5]
+ids_batch_5 <- phenotype[indices_batch_5, c("FID", "IID")]
+
+# Convert GRM matrix into vector form
+GRM_batch_5_vec <- as.vector(GRM_batch_5)
+
+# Write GRM files for Batch 5
+write.table(ids_batch_5, file = "GRM_batch_5.grm.id", quote = FALSE, row.names = FALSE, col.names = FALSE)
+writeBin(GRM_batch_5_vec, "GRM_batch_5.grm.bin", size = 4)
+writeBin(rep(1, length(GRM_batch_5_vec)), "GRM_batch_5.grm.N.bin", size = 4)
+
                        
